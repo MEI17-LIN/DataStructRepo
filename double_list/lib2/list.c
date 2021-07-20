@@ -5,6 +5,23 @@
 #include "list.h"
 
 
+// 存放data的另一种写法【或者说变长节点的另一种写法】
+typedef struct node_st 
+{           
+    //void *data;
+    struct node_st *next;
+    struct node_st *prev;
+    char data[0]; // C99才支持0长度的数组，为了移植性也可以改成1
+}listnode;
+
+typedef struct node_hd
+{
+    int size;
+    listnode head;
+}LLIST;
+
+
+
 
 LLIST *list_create(int initsize)
 {
