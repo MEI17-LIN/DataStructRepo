@@ -4,41 +4,40 @@
 
 #include "list.h"
 
+int list_insert(LLIST *list, const void *data, LLISTMODE mode);
 
-// 存放data的另一种写法【或者说变长节点的另一种写法】
-typedef struct node_st 
-{           
-    //void *data;
-    struct node_st *next;
-    struct node_st *prev;
-    char data[0]; // C99才支持0长度的数组，为了移植性也可以改成1
-}listnode;
+void *list_find(LLIST *list, const void *key, const list_cmp *cmp); 
 
-struct node_hd
-{
-    int size;
-    listnode head;
-};
+// delete是直接删除
+int list_delete(LLIST *list, const void *key, const list_cmp cmp);
+// fetch是删除并能"拿出来"
+int list_fetch(LLIST *list, const void *key, const list_cmp *cmp, void *data);
 
+
+void list_travel(LLIST *list, list_op *op);
 
 LLIST *list_create(int initsize)
 {
-    struct node_hd *me;
+    LLIST *me;
     me = malloc(sizeof(*me));
     if(me == NULL)
         return NULL;
     me->size = initsize;
     me->head.prev = &me->head; 
     me->head.next = &me->head;
+    me->insert = list_insert;
+    me->delete = list_delete;
+    me->fetch = list_fetch;
+    me->find = list_find;
+    me->travel = list_travel;
 
     return me;
 
 }
-void list_destroy(LLIST *ls)
+void list_destroy(LLIST *list)
 {
     listnode *node = NULL, *next = NULL;
-    struct node_hd *list = ls;
-
+    
     if(list == NULL)
         return;
     
@@ -55,9 +54,9 @@ void list_destroy(LLIST *ls)
 
 }
 
-int list_insert(LLIST *ls, const void *data, LLISTMODE mode)
+int list_insert(LLIST *list, const void *data, LLISTMODE mode)
 {
-    struct node_hd *list = ls;
+
     listnode *node = NULL, *p = &list->head;
 
     node = malloc(sizeof(*node) + list->size); // allocate memory for prev, next and data
@@ -87,7 +86,7 @@ int list_insert(LLIST *ls, const void *data, LLISTMODE mode)
 }
 
 
-static listnode *find_(struct node_hd *list, const void *key, list_cmp *cmp)
+static listnode *find_(LLIST *list, const void *key, list_cmp *cmp)
 {
     listnode *node = list->head.next;
     // while(node != &list->head)
@@ -109,9 +108,8 @@ static listnode *find_(struct node_hd *list, const void *key, list_cmp *cmp)
 
 }
 
-void *list_find(LLIST *ls, const void *key, const list_cmp *cmp)
+void *list_find(LLIST *list, const void *key, const list_cmp *cmp)
 {
-    struct node_hd *list = ls;
     listnode *p = NULL;
     p = find_(list, key, cmp);
     if(p == &list->head)
@@ -121,9 +119,8 @@ void *list_find(LLIST *ls, const void *key, const list_cmp *cmp)
     //return find_(list, key, cmp)->data;
 }
 
-int list_delete(LLIST *ls, const void *key, const list_cmp *cmp)
+int list_delete(LLIST *list, const void *key, const list_cmp *cmp)
 {
-    struct node_hd *list = ls;
     listnode *p = NULL;
     p = find_(list, key, cmp);
     if(p == &list->head)//if(p->data == NULL)
@@ -134,9 +131,8 @@ int list_delete(LLIST *ls, const void *key, const list_cmp *cmp)
     return 0;
 }
 
-int list_fetch(LLIST *ls, const void *key, const list_cmp *cmp, void *data)
+int list_fetch(LLIST *list, const void *key, const list_cmp *cmp, void *data)
 {
-    struct node_hd *list = ls;
     listnode *p = NULL;
     p = find_(list, key, cmp);
     if(p == &list->head)//if(p->data == NULL)
@@ -151,9 +147,8 @@ int list_fetch(LLIST *ls, const void *key, const list_cmp *cmp, void *data)
     return 0;
 }
 
-void list_travel(LLIST *ls, list_op *func)
+void list_travel(LLIST *list, list_op *func)
 {
-    struct node_hd *list = ls;
     listnode *node = list->head.next;
 
     while(node != &list->head)
