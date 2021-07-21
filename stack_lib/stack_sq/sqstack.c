@@ -22,7 +22,7 @@ void st_destroy(sqstack *st)
 
 int st_isempty(sqstack *st)
 {
-    return (st->top == -1);
+    return !(st->top == -1);
 
 }
 
@@ -36,7 +36,7 @@ int st_push(sqstack *st, datatype *data)
 
 int st_pop(sqstack *st, datatype *data)
 {
-    if(st_isempty(st))
+    if(st_isempty(st)==0)
         return -1;
     *data = st->data[st->top--];
     return 0;
@@ -44,7 +44,7 @@ int st_pop(sqstack *st, datatype *data)
 
 int st_top(sqstack *st, datatype *data) // check the top of the stack
 {
-    if(st_isempty(st))
+    if(st_isempty(st)==0)
         return -1;
     *data = st->data[st->top];
     return 0;
@@ -53,7 +53,7 @@ int st_top(sqstack *st, datatype *data) // check the top of the stack
 
 void st_travel(sqstack *st)
 {
-    if(st_isempty(st))
+    if(st_isempty(st)==0)
         return ;
     for(int i = 0; i <= st->top; i++)
     {
